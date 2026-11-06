@@ -333,7 +333,7 @@
       try {
         logConsole('BLE', 'Buscando dispositivos BLE cercanos...');
         const device = await navigator.bluetooth.requestDevice({
-          filters: [{ services: [NUS_SERVICE_UUID] }],
+          acceptAllDevices: true,
           optionalServices: [NUS_SERVICE_UUID]
         });
         await connectToDevice(device);

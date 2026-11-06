@@ -6,16 +6,18 @@
 
 #include <AccelStepper.h>
 #include <Preferences.h>
+#include "BluetoothSerial.h"
 #include <BLEDevice.h>
 #include <BLEServer.h>
 #include <BLEUtils.h>
 #include <BLE2902.h>
 
-// ==================== BLUETOOTH LOW ENERGY (BLE NUS) ====================
+// ==================== BLUETOOTH DUAL (CLASSIC SPP + BLE NUS) ====================
 #define SERVICE_UUID           "6E400001-B5A3-F393-E0A9-E50E24DCCA9E"
 #define CHARACTERISTIC_UUID_RX "6E400002-B5A3-F393-E0A9-E50E24DCCA9E"
 #define CHARACTERISTIC_UUID_TX "6E400003-B5A3-F393-E0A9-E50E24DCCA9E"
 
+BluetoothSerial SerialBT;
 BLEServer *pServer = NULL;
 BLECharacteristic *pTxCharacteristic = NULL;
 bool deviceConnected = false;
@@ -24,6 +26,7 @@ bool oldDeviceConnected = false;
 String device_name = "joystick";
 volatile int comandoBlePendiente = 0;
 String bleRxBuffer = "";
+String classicRxBuffer = "";
 int data_gold = 0;
 
 // ==================== CONFIGURACIÓN DE PINES (ADC1) ====================
@@ -195,6 +198,10 @@ class MyCallbacks: public BLECharacteristicCallbacks {
 };
 
 void iniciarBLE() {
+  // 1. Iniciar Bluetooth Clásico (retrocompatible con App Inventor)
+  SerialBT.begin(device_name);
+
+  // 2. Iniciar Bluetooth Low Energy (BLE NUS para Web App / iOS / Flutter)
   BLEDevice::init(device_name.c_str());
   pServer = BLEDevice::createServer();
   pServer->setCallbacks(new MyServerCallbacks());
@@ -224,11 +231,14 @@ void iniciarBLE() {
   pAdvertising->setMinPreferred(0x12);
   BLEDevice::startAdvertising();
 
-  Serial.println("BLE UART iniciado. Dispositivo: " + device_name);
+  Serial.println("Bluetooth Dual (Classic + BLE UART) iniciado. Dispositivo: " + device_name);
 }
 
 void enviarConsolaBLE(const String &texto) {
   Serial.println(texto);
+  if (SerialBT.hasClient()) {
+    SerialBT.println(texto);
+  }
   if (deviceConnected && pTxCharacteristic != NULL) {
     String payload = texto + "\n";
     pTxCharacteristic->setValue(payload.c_str());
@@ -237,13 +247,27 @@ void enviarConsolaBLE(const String &texto) {
 }
 
 // ============================================================
-// RECEPCIÓN DE DATOS BLUETOOTH (NO BLOQUEANTE)
+// RECEPCIÓN DE DATOS BLUETOOTH DUAL (NO BLOQUEANTE)
 // ============================================================
 int btReceptor() {
+  // 1. Revisar si llegó comando por BLE
   if (comandoBlePendiente != 0) {
     int cmd = comandoBlePendiente;
     comandoBlePendiente = 0;
     return cmd;
+  }
+  // 2. Revisar si llegó comando por Bluetooth Clásico (App Inventor) sin bloquear
+  while (SerialBT.available()) {
+    char incomingChar = SerialBT.read();
+    if (incomingChar == '\n' || incomingChar == '\r') {
+      if (classicRxBuffer.length() > 0) {
+        int cmd = classicRxBuffer.toInt();
+        classicRxBuffer = "";
+        return cmd;
+      }
+    } else {
+      classicRxBuffer += incomingChar;
+    }
   }
   return 0;
 }
