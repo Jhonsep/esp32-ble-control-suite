@@ -10,20 +10,34 @@
   <script src="https://cdn.tailwindcss.com"></script>
   <style>
     body.theme-light {
-      --bg-main: #f1f5f9;
+      --bg-main: #e2e8f0;
       --bg-card: #ffffff;
-      --bg-surface: #f8fafc;
+      --bg-surface: #e2e8f0;
+      --bg-btn: #f1f5f9;
+      --bg-pad: #e0f2fe;
+      --border-pad: #0284c7;
       --text-main: #0f172a;
-      --text-muted: #64748b;
-      --border-col: #cbd5e1;
+      --text-muted: #334155;
+      --border-col: #94a3b8;
+      --accent-blue: #0369a1;
+      --accent-green: #047857;
+      --accent-red: #be123c;
+      --bg-console: #f8fafc;
     }
     body.theme-dark {
       --bg-main: #090d16;
       --bg-card: #111827;
       --bg-surface: #1e293b;
+      --bg-btn: #1e293b;
+      --bg-pad: rgba(14, 165, 233, 0.16);
+      --border-pad: rgba(56, 189, 248, 0.5);
       --text-main: #f8fafc;
       --text-muted: #94a3b8;
       --border-col: #334155;
+      --accent-blue: #38bdf8;
+      --accent-green: #34d399;
+      --accent-red: #fb7185;
+      --bg-console: #090d16;
     }
   </style>
 </head>
@@ -31,27 +45,27 @@
   <div class="max-w-md mx-auto bg-[var(--bg-card)] border border-[var(--border-col)] rounded-3xl shadow-xl overflow-hidden flex flex-col relative">
     
     <!-- Top Bar: Connection Status, Quick Connect, BLE Scanner | Dark Mode Toggle -->
-    <div class="p-3.5 border-b border-[var(--border-col)] bg-[var(--bg-surface)] flex items-center justify-between gap-2">
+    <div class="p-3 border-b border-[var(--border-col)] bg-[var(--bg-surface)] flex items-center justify-between gap-2">
       <!-- Left: Current Device & Status -->
-      <button onclick="scanBleDevice()" class="flex items-center gap-2.5 text-left group hover:opacity-90 transition min-w-0">
-        <span id="statusDot" class="w-3 h-3 rounded-full bg-rose-500 shrink-0"></span>
-        <div class="min-w-0">
+      <button onclick="scanBleDevice()" class="flex items-center gap-2 text-left group hover:opacity-90 transition min-w-0 flex-1">
+        <span id="statusDot" class="w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0"></span>
+        <div class="min-w-0 flex-1">
           <div class="flex items-center gap-1.5">
             <span class="font-bold text-sm truncate" id="deviceName">Sin conectar</span>
-            <span class="text-xs px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 font-semibold shrink-0" id="statusBadge">Off</span>
+            <span class="text-[11px] px-1.5 py-0.5 rounded-md bg-rose-500/20 text-[var(--accent-red)] font-bold shrink-0" id="statusBadge">Off</span>
           </div>
-          <p class="text-xs text-[var(--text-muted)] truncate" id="deviceHint">Toca 📡 para buscar o ⚡ para reconectar</p>
+          <p class="text-[11px] text-[var(--text-muted)] truncate" id="deviceHint">Toca ⚡ o 📡 para conectar</p>
         </div>
       </button>
 
       <!-- Right: Quick Reconnect + BLE Search | Separator | Night Mode Toggle -->
       <div class="flex items-center gap-1.5 shrink-0">
-        <button onclick="quickReconnect()" id="quickConnBtn" title="Conexión rápida al último ESP32" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border border-emerald-500/40 bg-emerald-500/10 text-emerald-400 hover:bg-emerald-500/20 active:scale-95 transition flex items-center gap-1">
+        <button onclick="quickReconnect()" id="quickConnBtn" title="Conexión rápida al último ESP32" class="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-emerald-500/50 bg-emerald-500/15 text-[var(--accent-green)] hover:opacity-90 active:scale-95 transition flex items-center gap-1">
           <span>⚡</span>
-          <span class="hidden sm:inline">Rápida</span>
+          <span>Rápida</span>
         </button>
 
-        <button onclick="scanBleDevice()" title="Buscar dispositivo BLE" class="px-2.5 py-1.5 rounded-xl text-xs font-semibold border border-[var(--border-col)] bg-[var(--bg-card)] hover:border-sky-500 active:scale-95 transition flex items-center gap-1">
+        <button onclick="scanBleDevice()" title="Buscar dispositivo BLE" class="px-2.5 py-1.5 rounded-xl text-xs font-bold border border-[var(--border-col)] bg-[var(--bg-card)] text-[var(--accent-blue)] hover:border-sky-500 active:scale-95 transition flex items-center gap-1">
           <span>📡</span>
           <span>BLE</span>
         </button>
@@ -60,68 +74,64 @@
         <div class="h-6 w-[1px] bg-[var(--border-col)] mx-0.5"></div>
 
         <!-- Far-Right: Dark/Light Mode Button -->
-        <button onclick="toggleTheme()" id="themeBtn" title="Activar / Desactivar Modo Oscuro" class="p-2 rounded-xl border border-[var(--border-col)] bg-[var(--bg-card)] text-sm hover:opacity-80 active:scale-95 transition">
+        <button onclick="toggleTheme()" id="themeBtn" title="Activar / Desactivar Modo Oscuro" class="p-1.5 rounded-xl border border-[var(--border-col)] bg-[var(--bg-card)] text-sm hover:opacity-80 active:scale-95 transition">
           🌙
         </button>
       </div>
     </div>
 
     <!-- Template / Profile Bar + Live Template Editor -->
-    <div class="px-3.5 py-2.5 border-b border-[var(--border-col)] flex items-center justify-between gap-2 bg-[var(--bg-card)]">
-      <div class="flex items-center gap-1.5 flex-1 min-w-0">
-        <select id="profileSelect" onchange="changeProfile(this.value)" class="bg-[var(--bg-surface)] text-[var(--text-main)] text-xs font-semibold px-2.5 py-1.5 rounded-xl border border-[var(--border-col)] flex-1 outline-none truncate">
+    <div class="px-3 py-2 border-b border-[var(--border-col)] flex items-center justify-between gap-1.5 bg-[var(--bg-card)]">
+      <div class="flex items-center flex-1 min-w-0">
+        <select id="profileSelect" onchange="changeProfile(this.value)" class="w-full bg-[var(--bg-btn)] text-[var(--text-main)] text-xs font-bold px-2.5 py-1.5 rounded-xl border border-[var(--border-col)] outline-none truncate">
         </select>
       </div>
-      <div class="flex items-center gap-1.5">
-        <button onclick="toggleEditMode()" id="editProfileBtn" class="text-xs px-2.5 py-1.5 rounded-xl border border-[var(--border-col)] bg-[var(--bg-surface)] font-medium hover:border-sky-500 transition">
+      <div class="flex items-center gap-1.5 shrink-0">
+        <button onclick="toggleEditMode()" id="editProfileBtn" class="text-xs px-2.5 py-1.5 rounded-xl border border-[var(--border-col)] bg-[var(--bg-btn)] font-bold hover:border-sky-500 transition">
           ✏️ Editar
         </button>
-        <button onclick="createNewProfile()" class="text-xs px-2.5 py-1.5 rounded-xl border border-sky-500/40 bg-sky-500/10 text-sky-400 font-semibold hover:bg-sky-500/20 transition">
+        <button onclick="createNewProfile()" class="text-xs px-2.5 py-1.5 rounded-xl border border-sky-500/50 bg-sky-500/15 text-[var(--accent-blue)] font-bold hover:bg-sky-500/25 transition">
           + Plantilla
         </button>
       </div>
     </div>
 
     <!-- Edit Mode Notice Banner -->
-    <div id="editBanner" class="hidden px-3.5 py-2 bg-amber-500/15 border-b border-amber-500/30 flex items-center justify-between gap-2">
-      <span class="text-xs text-amber-400 font-medium">✏️ <b>Modo Edición:</b> Toca cualquier botón para renombrarlo.</span>
+    <div id="editBanner" class="hidden px-3.5 py-2 bg-amber-500/20 border-b border-amber-500/40 flex items-center justify-between gap-2">
+      <span class="text-xs font-bold text-amber-500">✏️ Modo Edición: Toca cualquier botón para renombrarlo.</span>
       <div class="flex gap-1.5">
-        <button onclick="deleteCurrentProfile()" id="delProfileBtn" class="hidden text-xs px-2 py-1 rounded-lg bg-rose-500/20 text-rose-400 font-semibold">Borrar</button>
+        <button onclick="deleteCurrentProfile()" id="delProfileBtn" class="hidden text-xs px-2 py-1 rounded-lg bg-rose-500/20 text-[var(--accent-red)] font-bold">Borrar</button>
         <button onclick="toggleEditMode()" class="text-xs px-2.5 py-1 rounded-lg bg-amber-500 text-black font-bold">Listo</button>
       </div>
     </div>
 
-    <!-- Main Control Area (Zero Scroll Required) -->
-    <div class="p-3.5 sm:p-4 space-y-3.5">
+    <!-- Main Control Area -->
+    <div class="p-3.5 space-y-3">
       
       <!-- Section 1: Option 1..4 (Codes 10\n .. 13\n -> Positions P1..P4) -->
       <div>
         <div class="flex justify-between items-center mb-1.5">
-          <span class="text-xs font-semibold uppercase tracking-wider text-[var(--text-muted)]">Opciones / Posiciones (10\n - 13\n)</span>
-          <button onclick="toggleCodeBadges()" id="badgeBtn" class="text-xs text-sky-400 hover:underline">
+          <span class="text-[11px] font-bold uppercase tracking-wider text-[var(--text-muted)]">Opciones / Posiciones (10\n - 13\n)</span>
+          <button onclick="toggleCodeBadges()" id="badgeBtn" class="text-xs font-bold text-[var(--accent-blue)] hover:underline">
             Mostrar códigos
           </button>
         </div>
         <div class="grid grid-cols-4 gap-2">
-          <button onclick="handleButtonTap(10)" class="relative flex flex-col items-center justify-center p-2.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-col)] active:scale-95 transition hover:border-sky-500">
-            <span class="font-bold text-xs sm:text-sm text-center leading-tight" id="lbl_10">P1 • ESTE</span>
-            <span class="text-xs text-[var(--text-muted)] mt-0.5">Option 1</span>
-            <span class="code-badge hidden absolute top-1 right-1 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">10\n</span>
+          <button onclick="handleButtonTap(10)" class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[var(--bg-btn)] border border-[var(--border-col)] active:scale-95 transition hover:border-sky-500">
+            <span class="font-extrabold text-xs sm:text-sm text-center leading-tight" id="lbl_10">P1 • ESTE</span>
+            <span class="text-[11px] text-[var(--text-muted)] mt-0.5 font-medium" id="sub_10" data-base="Option 1">Option 1</span>
           </button>
-          <button onclick="handleButtonTap(11)" class="relative flex flex-col items-center justify-center p-2.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-col)] active:scale-95 transition hover:border-sky-500">
-            <span class="font-bold text-xs sm:text-sm text-center leading-tight" id="lbl_11">P2</span>
-            <span class="text-xs text-[var(--text-muted)] mt-0.5">Option 2</span>
-            <span class="code-badge hidden absolute top-1 right-1 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">11\n</span>
+          <button onclick="handleButtonTap(11)" class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[var(--bg-btn)] border border-[var(--border-col)] active:scale-95 transition hover:border-sky-500">
+            <span class="font-extrabold text-xs sm:text-sm text-center leading-tight" id="lbl_11">P2</span>
+            <span class="text-[11px] text-[var(--text-muted)] mt-0.5 font-medium" id="sub_11" data-base="Option 2">Option 2</span>
           </button>
-          <button onclick="handleButtonTap(12)" class="relative flex flex-col items-center justify-center p-2.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-col)] active:scale-95 transition hover:border-sky-500">
-            <span class="font-bold text-xs sm:text-sm text-center leading-tight" id="lbl_12">P3</span>
-            <span class="text-xs text-[var(--text-muted)] mt-0.5">Option 3</span>
-            <span class="code-badge hidden absolute top-1 right-1 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">12\n</span>
+          <button onclick="handleButtonTap(12)" class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[var(--bg-btn)] border border-[var(--border-col)] active:scale-95 transition hover:border-sky-500">
+            <span class="font-extrabold text-xs sm:text-sm text-center leading-tight" id="lbl_12">P3</span>
+            <span class="text-[11px] text-[var(--text-muted)] mt-0.5 font-medium" id="sub_12" data-base="Option 3">Option 3</span>
           </button>
-          <button onclick="handleButtonTap(13)" class="relative flex flex-col items-center justify-center p-2.5 rounded-xl bg-[var(--bg-surface)] border border-[var(--border-col)] active:scale-95 transition hover:border-sky-500">
-            <span class="font-bold text-xs sm:text-sm text-center leading-tight" id="lbl_13">P4 • OESTE</span>
-            <span class="text-xs text-[var(--text-muted)] mt-0.5">Option 4</span>
-            <span class="code-badge hidden absolute top-1 right-1 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">13\n</span>
+          <button onclick="handleButtonTap(13)" class="flex flex-col items-center justify-center p-2.5 rounded-2xl bg-[var(--bg-btn)] border border-[var(--border-col)] active:scale-95 transition hover:border-sky-500">
+            <span class="font-extrabold text-xs sm:text-sm text-center leading-tight" id="lbl_13">P4 • OESTE</span>
+            <span class="text-[11px] text-[var(--text-muted)] mt-0.5 font-medium" id="sub_13" data-base="Option 4">Option 4</span>
           </button>
         </div>
       </div>
@@ -129,75 +139,70 @@
       <!-- Section 2: D-Pad / Jog & Action Keys -->
       <div class="grid grid-cols-3 gap-2.5 items-center">
         <!-- Top Row -->
-        <button onclick="handleButtonTap(5)" class="relative h-14 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-col)] flex flex-col items-center justify-center active:scale-95 transition hover:border-sky-500">
-          <span class="font-bold text-sm" id="lbl_5">➕ AUTO</span>
-          <span class="text-xs text-[var(--text-muted)]">Plus (5)</span>
-          <span class="code-badge hidden absolute top-1 right-1.5 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">5\n</span>
+        <button onclick="handleButtonTap(5)" class="h-14 rounded-2xl bg-[var(--bg-btn)] border border-[var(--border-col)] flex flex-col items-center justify-center active:scale-95 transition hover:border-sky-500">
+          <span class="font-extrabold text-xs sm:text-sm" id="lbl_5">AUTO RGB</span>
+          <span class="text-[11px] text-[var(--text-muted)] font-medium" id="sub_5" data-base="Plus (5)">Plus (5)</span>
         </button>
 
-        <button onclick="handleButtonTap(1)" class="relative h-16 rounded-2xl bg-sky-500/15 border border-sky-500/40 flex flex-col items-center justify-center active:scale-95 transition hover:bg-sky-500/25">
-          <span class="text-lg leading-none">▲</span>
-          <span class="text-xs font-semibold mt-0.5" id="lbl_1">Jog +</span>
-          <span class="code-badge hidden absolute top-1 right-1.5 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">1\n</span>
+        <button onclick="handleButtonTap(1)" class="h-16 rounded-2xl bg-[var(--bg-pad)] border border-[var(--border-pad)] flex flex-col items-center justify-center active:scale-95 transition hover:opacity-90">
+          <span class="text-base leading-none font-bold text-[var(--accent-blue)]">▲</span>
+          <span class="text-xs font-extrabold mt-0.5" id="lbl_1">Jog +</span>
+          <span class="hidden text-[10px] font-bold text-[var(--accent-blue)]" id="sub_1" data-base=""></span>
         </button>
 
-        <button onclick="handleButtonTap(6)" class="relative h-14 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-col)] flex flex-col items-center justify-center active:scale-95 transition hover:border-sky-500">
-          <span class="font-bold text-sm" id="lbl_6">➖ AUX</span>
-          <span class="text-xs text-[var(--text-muted)]">Minus (6)</span>
-          <span class="code-badge hidden absolute top-1 right-1.5 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">6\n</span>
+        <button onclick="handleButtonTap(6)" class="h-14 rounded-2xl bg-[var(--bg-btn)] border border-[var(--border-col)] flex flex-col items-center justify-center active:scale-95 transition hover:border-sky-500">
+          <span class="font-extrabold text-xs sm:text-sm" id="lbl_6">AUX</span>
+          <span class="text-[11px] text-[var(--text-muted)] font-medium" id="sub_6" data-base="Minus (6)">Minus (6)</span>
         </button>
 
         <!-- Middle Row: Left, STOP (Center Emergency), Right -->
-        <button onclick="handleButtonTap(2)" class="relative h-16 rounded-2xl bg-sky-500/15 border border-sky-500/40 flex flex-col items-center justify-center active:scale-95 transition hover:bg-sky-500/25">
-          <span class="text-lg leading-none">◀</span>
-          <span class="text-xs font-semibold mt-0.5" id="lbl_2">Jog ESTE</span>
-          <span class="code-badge hidden absolute top-1 right-1.5 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">2\n</span>
+        <button onclick="handleButtonTap(2)" class="h-16 rounded-2xl bg-[var(--bg-pad)] border border-[var(--border-pad)] flex flex-col items-center justify-center active:scale-95 transition hover:opacity-90">
+          <span class="text-base leading-none font-bold text-[var(--accent-blue)]">◀</span>
+          <span class="text-xs font-extrabold mt-0.5" id="lbl_2">Jog ESTE</span>
+          <span class="hidden text-[10px] font-bold text-[var(--accent-blue)]" id="sub_2" data-base=""></span>
         </button>
 
-        <button onclick="handleButtonTap(7)" class="relative h-16 rounded-2xl bg-rose-600 text-white font-extrabold shadow-lg shadow-rose-600/30 flex flex-col items-center justify-center active:scale-95 transition hover:bg-rose-500">
-          <span class="text-base tracking-wider" id="lbl_7">🛑 STOP</span>
-          <span class="text-xs font-normal opacity-90">Emergencia</span>
-          <span class="code-badge hidden absolute top-1 right-1.5 text-xs px-1 rounded bg-black/30 text-white font-mono">7\n</span>
+        <button onclick="handleButtonTap(7)" class="h-16 rounded-2xl bg-rose-600 border border-rose-500 text-white font-extrabold shadow-lg shadow-rose-600/25 flex flex-col items-center justify-center active:scale-95 transition hover:bg-rose-500">
+          <span class="text-sm sm:text-base tracking-wider" id="lbl_7">✋ STOP</span>
+          <span class="text-[11px] font-semibold opacity-95" id="sub_7" data-base="Emergencia">Emergencia</span>
         </button>
 
-        <button onclick="handleButtonTap(3)" class="relative h-16 rounded-2xl bg-sky-500/15 border border-sky-500/40 flex flex-col items-center justify-center active:scale-95 transition hover:bg-sky-500/25">
-          <span class="text-lg leading-none">▶</span>
-          <span class="text-xs font-semibold mt-0.5" id="lbl_3">Jog OESTE</span>
-          <span class="code-badge hidden absolute top-1 right-1.5 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">3\n</span>
+        <button onclick="handleButtonTap(3)" class="h-16 rounded-2xl bg-[var(--bg-pad)] border border-[var(--border-pad)] flex flex-col items-center justify-center active:scale-95 transition hover:opacity-90">
+          <span class="text-base leading-none font-bold text-[var(--accent-blue)]">▶</span>
+          <span class="text-xs font-extrabold mt-0.5" id="lbl_3">Jog OESTE</span>
+          <span class="hidden text-[10px] font-bold text-[var(--accent-blue)]" id="sub_3" data-base=""></span>
         </button>
 
         <!-- Bottom Row: SAVE, Down, PLAY -->
-        <button onclick="handleButtonTap(8)" class="relative h-14 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-col)] flex flex-col items-center justify-center active:scale-95 transition hover:border-sky-500">
-          <span class="font-bold text-sm" id="lbl_8">💾 SAVE</span>
-          <span class="text-xs text-[var(--text-muted)]">Guardar (8)</span>
-          <span class="code-badge hidden absolute top-1 right-1.5 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">8\n</span>
+        <button onclick="handleButtonTap(8)" class="h-14 rounded-2xl bg-[var(--bg-btn)] border border-[var(--border-col)] flex flex-col items-center justify-center active:scale-95 transition hover:border-sky-500">
+          <span class="font-extrabold text-xs sm:text-sm" id="lbl_8">SAVE</span>
+          <span class="text-[11px] text-[var(--text-muted)] font-medium" id="sub_8" data-base="Save (8)">Save (8)</span>
         </button>
 
-        <button onclick="handleButtonTap(4)" class="relative h-16 rounded-2xl bg-sky-500/15 border border-sky-500/40 flex flex-col items-center justify-center active:scale-95 transition hover:bg-sky-500/25">
-          <span class="text-lg leading-none">▼</span>
-          <span class="text-xs font-semibold mt-0.5" id="lbl_4">Jog -</span>
-          <span class="code-badge hidden absolute top-1 right-1.5 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">4\n</span>
+        <button onclick="handleButtonTap(4)" class="h-16 rounded-2xl bg-[var(--bg-pad)] border border-[var(--border-pad)] flex flex-col items-center justify-center active:scale-95 transition hover:opacity-90">
+          <span class="text-base leading-none font-bold text-[var(--accent-blue)]">▼</span>
+          <span class="text-xs font-extrabold mt-0.5" id="lbl_4">Jog -</span>
+          <span class="hidden text-[10px] font-bold text-[var(--accent-blue)]" id="sub_4" data-base=""></span>
         </button>
 
-        <button onclick="handleButtonTap(9)" class="relative h-14 rounded-2xl bg-[var(--bg-surface)] border border-[var(--border-col)] flex flex-col items-center justify-center active:scale-95 transition hover:border-sky-500">
-          <span class="font-bold text-sm" id="lbl_9">▶️ PLAY</span>
-          <span class="text-xs text-[var(--text-muted)]">Ejecutar (9)</span>
-          <span class="code-badge hidden absolute top-1 right-1.5 text-xs px-1 rounded bg-sky-500/20 text-sky-400 font-mono">9\n</span>
+        <button onclick="handleButtonTap(9)" class="h-14 rounded-2xl bg-[var(--bg-btn)] border border-[var(--border-col)] flex flex-col items-center justify-center active:scale-95 transition hover:border-sky-500">
+          <span class="font-extrabold text-xs sm:text-sm" id="lbl_9">PLAY</span>
+          <span class="text-[11px] text-[var(--text-muted)] font-medium" id="sub_9" data-base="Play (9)">Play (9)</span>
         </button>
       </div>
 
       <!-- Section 3: Live BLE Serial Console -->
       <div class="border border-[var(--border-col)] rounded-2xl overflow-hidden bg-[var(--bg-surface)]">
         <div class="px-3 py-1.5 border-b border-[var(--border-col)] flex items-center justify-between">
-          <span class="text-xs font-semibold text-[var(--text-muted)]">💻 Monitor Serial BLE (ESP32 ↔ App)</span>
-          <button onclick="clearConsole()" class="text-xs text-[var(--text-muted)] hover:underline">Limpiar</button>
+          <span class="text-xs font-bold text-[var(--text-main)]">💻 Monitor Serial BLE</span>
+          <button onclick="clearConsole()" class="text-xs font-bold text-[var(--accent-blue)] hover:underline">Limpiar</button>
         </div>
-        <div id="consoleBox" class="h-28 overflow-y-auto p-2.5 font-mono text-xs space-y-1 bg-black/15">
-          <div class="text-[var(--text-muted)]">[SYS] Listo. Toca 📡 BLE para buscar (ej. joystick, Joystick 5) o ⚡ para reconectar.</div>
+        <div id="consoleBox" class="h-28 overflow-y-auto p-2.5 font-mono text-xs space-y-1 bg-[var(--bg-console)]">
+          <div class="text-[var(--text-muted)] font-medium">[SYS] Listo. Toca 📡 BLE para buscar (ej. joystick, Joystick 5) o ⚡ Rápida.</div>
         </div>
         <div class="p-1.5 border-t border-[var(--border-col)] flex gap-1.5 bg-[var(--bg-card)]">
-          <input id="customCmd" type="text" placeholder="Enviar comando libre (ej. 10)..." class="flex-1 bg-[var(--bg-surface)] text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border-col)] outline-none font-mono" onkeydown="if(event.key==='Enter') sendCustom()" />
-          <button onclick="sendCustom()" class="px-3 py-1.5 rounded-lg bg-sky-500 text-white text-xs font-semibold hover:bg-sky-400 transition">Enviar</button>
+          <input id="customCmd" type="text" placeholder="Comando libre (ej. 10)..." class="flex-1 bg-[var(--bg-btn)] text-[var(--text-main)] text-xs px-2.5 py-1.5 rounded-lg border border-[var(--border-col)] outline-none font-mono" onkeydown="if(event.key==='Enter') sendCustom()" />
+          <button onclick="sendCustom()" class="px-3.5 py-1.5 rounded-lg bg-sky-600 text-white text-xs font-bold hover:bg-sky-500 transition">Enviar</button>
         </div>
       </div>
 
@@ -209,11 +214,11 @@
         <h3 class="font-bold text-sm" id="renameTitle">Editar Botón</h3>
         <div>
           <label class="text-xs text-[var(--text-muted)] block mb-1">Nombre visible en la plantilla:</label>
-          <input id="renameInput" type="text" class="w-full bg-[var(--bg-surface)] text-sm px-3 py-1.5 rounded-xl border border-[var(--border-col)] outline-none" onkeydown="if(event.key==='Enter') saveButtonLabel()" />
+          <input id="renameInput" type="text" class="w-full bg-[var(--bg-btn)] text-sm px-3 py-1.5 rounded-xl border border-[var(--border-col)] outline-none" onkeydown="if(event.key==='Enter') saveButtonLabel()" />
         </div>
         <div class="flex justify-end gap-2 pt-1">
-          <button onclick="closeRenameModal()" class="px-3 py-1.5 rounded-xl text-xs bg-[var(--bg-surface)]">Cancelar</button>
-          <button onclick="saveButtonLabel()" class="px-3 py-1.5 rounded-xl text-xs bg-sky-500 text-white font-semibold">Guardar</button>
+          <button onclick="closeRenameModal()" class="px-3 py-1.5 rounded-xl text-xs bg-[var(--bg-btn)] font-semibold">Cancelar</button>
+          <button onclick="saveButtonLabel()" class="px-3 py-1.5 rounded-xl text-xs bg-sky-600 text-white font-bold">Guardar</button>
         </div>
       </div>
     </div>
@@ -221,10 +226,9 @@
   </div>
 
   <script>
-    // ==================== BLE NORDIC UART SERVICE UUIDS ====================
     const NUS_SERVICE_UUID = '6e400001-b5a3-f393-e0a9-e50e24dcca9e';
-    const NUS_RX_UUID      = '6e400002-b5a3-f393-e0a9-e50e24dcca9e'; // App escribe al ESP32
-    const NUS_TX_UUID      = '6e400003-b5a3-f393-e0a9-e50e24dcca9e'; // ESP32 notifica a la App
+    const NUS_RX_UUID      = '6e400002-b5a3-f393-e0a9-e50e24dcca9e';
+    const NUS_TX_UUID      = '6e400003-b5a3-f393-e0a9-e50e24dcca9e';
 
     let bleDevice = null;
     let bleServer = null;
@@ -237,15 +241,23 @@
     let showBadges = false;
     let currentProfile = 'pantalla';
 
-    // Plantillas por defecto
     const defaultProfiles = {
       pantalla: {
-        name: "📺 Pantalla Móvil (P1-P4)",
+        name: "📺 Pantalla Nueva (Options = P1-P4)",
         builtin: true,
         labels: {
           1: "Jog +", 2: "Jog ESTE", 3: "Jog OESTE", 4: "Jog -",
-          5: "➕ AUTO", 6: "➖ AUX", 7: "🛑 STOP", 8: "💾 SAVE", 9: "▶️ PLAY",
+          5: "AUTO RGB", 6: "AUX", 7: "✋ STOP", 8: "SAVE", 9: "PLAY",
           10: "P1 • ESTE", 11: "P2", 12: "P3", 13: "P4 • OESTE"
+        }
+      },
+      legado: {
+        name: "🕹️ Código Viejo (Flechas = P1-P4)",
+        builtin: true,
+        labels: {
+          1: "P1 • ESTE", 2: "P2", 3: "P3", 4: "P4 • OESTE",
+          5: "AUTO RGB", 6: "MINUS", 7: "✋ STOP", 8: "SAVE", 9: "PLAY",
+          10: "OPTION 1", 11: "OPTION 2", 12: "OPTION 3", 13: "OPTION 4"
         }
       },
       servo: {
@@ -253,7 +265,7 @@
         builtin: true,
         labels: {
           1: "Tilt +10°", 2: "Pan -10°", 3: "Pan +10°", 4: "Tilt -10°",
-          5: "➕ Vel +", 6: "➖ Vel -", 7: "🛑 STOP", 8: "💾 Guardar", 9: "▶️ Secuencia",
+          5: "Vel +", 6: "Vel -", 7: "✋ STOP", 8: "Guardar", 9: "Secuencia",
           10: "0° Home", 11: "45°", 12: "90°", 13: "180°"
         }
       },
@@ -262,20 +274,19 @@
         builtin: true,
         labels: {
           1: "Arriba", 2: "Izquierda", 3: "Derecha", 4: "Abajo",
-          5: "➕ PLUS", 6: "➖ MINUS", 7: "🛑 STOP", 8: "💾 SAVE", 9: "▶️ PLAY",
+          5: "PLUS", 6: "MINUS", 7: "✋ STOP", 8: "SAVE", 9: "PLAY",
           10: "OPTION 1", 11: "OPTION 2", 12: "OPTION 3", 13: "OPTION 4"
         }
       }
     };
 
-    let profiles = JSON.parse(localStorage.getItem('esp32_ble_profiles')) || defaultProfiles;
+    let profiles = JSON.parse(localStorage.getItem('esp32_ble_profiles_v2')) || defaultProfiles;
 
     function saveProfilesToStorage() {
-      localStorage.setItem('esp32_ble_profiles', JSON.stringify(profiles));
+      localStorage.setItem('esp32_ble_profiles_v2', JSON.stringify(profiles));
     }
 
     function initApp() {
-      // Tema responsive al sistema o guardado por el usuario
       const savedTheme = localStorage.getItem('esp32_ble_theme');
       if (savedTheme !== null) {
         setTheme(savedTheme === 'dark');
@@ -295,7 +306,7 @@
 
       const lastDevName = localStorage.getItem('esp32_ble_last_device');
       if (lastDevName) {
-        document.getElementById('deviceHint').innerText = `Último: ${lastDevName} (Toca ⚡ para reconectar)`;
+        document.getElementById('deviceHint').innerText = `Último: ${lastDevName} (Toca ⚡)`;
       }
     }
 
@@ -310,7 +321,6 @@
       });
     }
 
-    // ==================== TEMA CLARO / OSCURO ====================
     function setTheme(dark) {
       isDark = dark;
       document.body.className = isDark
@@ -324,7 +334,6 @@
       setTheme(!isDark);
     }
 
-    // ==================== CONEXIÓN BLE Y CONEXIÓN RÁPIDA ====================
     async function scanBleDevice() {
       if (!navigator.bluetooth) {
         logConsole('ERR', 'Web Bluetooth no disponible en este navegador. En iOS usa la app gratuita "Bluefy" y en Android usa Chrome.');
@@ -345,13 +354,11 @@
     }
 
     async function quickReconnect() {
-      // Si ya tenemos la referencia del dispositivo en la sesión actual, reconecta directo sin abrir popup
       if (bleDevice) {
         logConsole('BLE', `Reconectando rápido a "${bleDevice.name || 'ESP32'}"...`);
         await connectToDevice(bleDevice);
         return;
       }
-      // Si el navegador soporta navigator.bluetooth.getDevices() (dispositivos autorizados previamente)
       if (navigator.bluetooth && navigator.bluetooth.getDevices) {
         try {
           const devices = await navigator.bluetooth.getDevices();
@@ -364,7 +371,6 @@
           }
         } catch (_) {}
       }
-      // Fallback: abre el selector filtrado directamente
       await scanBleDevice();
     }
 
@@ -414,35 +420,34 @@
       const hint = document.getElementById('deviceHint');
 
       if (connected) {
-        dot.className = 'w-3 h-3 rounded-full bg-emerald-500 animate-pulse shrink-0';
-        badge.className = 'text-xs px-2 py-0.5 rounded-full bg-emerald-500/15 text-emerald-400 font-semibold shrink-0';
-        badge.innerText = 'Conectado';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-emerald-500 animate-pulse shrink-0';
+        badge.className = 'text-[11px] px-1.5 py-0.5 rounded-md bg-emerald-500/20 text-[var(--accent-green)] font-bold shrink-0';
+        badge.innerText = 'BLE';
         devName.innerText = name;
-        hint.innerText = 'Canal UART BLE activo';
+        hint.innerText = 'Conectado • Toca para cambiar';
       } else {
-        dot.className = 'w-3 h-3 rounded-full bg-rose-500 shrink-0';
-        badge.className = 'text-xs px-2 py-0.5 rounded-full bg-rose-500/15 text-rose-400 font-semibold shrink-0';
+        dot.className = 'w-2.5 h-2.5 rounded-full bg-rose-500 shrink-0';
+        badge.className = 'text-[11px] px-1.5 py-0.5 rounded-md bg-rose-500/20 text-[var(--accent-red)] font-bold shrink-0';
         badge.innerText = 'Off';
         const last = localStorage.getItem('esp32_ble_last_device');
-        devName.innerText = last ? `${last} (Off)` : 'Sin conectar';
-        hint.innerText = 'Toca ⚡ para reconectar o 📡 para buscar';
+        devName.innerText = last ? `${last}` : 'Sin conectar';
+        hint.innerText = 'Toca ⚡ o 📡 para conectar';
       }
     }
 
-    // ==================== ENVÍO DE COMANDOS (1\n al 13\n) ====================
     async function sendCmd(num) {
       if (navigator.vibrate) navigator.vibrate(25);
       const payload = `${num}\n`;
 
       if (!bleDevice || !bleDevice.gatt.connected || !rxCharacteristic) {
-        logConsole('ERR', `No conectado (Comando "${num}\\n" no enviado). Toca ⚡ o 📡.`);
+        logConsole('ERR', `No conectado (Comando "${num}\\n" no enviado).`);
         return;
       }
 
       try {
         const encoder = new TextEncoder();
         await rxCharacteristic.writeValue(encoder.encode(payload));
-        logConsole('TX', `Enviado -> "${num}\\n"`);
+        logConsole('TX', `[BLE] -> "${num}\\n"`);
       } catch (err) {
         logConsole('ERR', `Fallo al enviar: ${err.message}`);
       }
@@ -456,7 +461,6 @@
       sendCmd(val);
     }
 
-    // ==================== GESTIÓN DE PLANTILLAS ====================
     function changeProfile(key) {
       if (!profiles[key]) return;
       currentProfile = key;
@@ -472,7 +476,7 @@
     function toggleEditMode() {
       editMode = !editMode;
       document.getElementById('editBanner').classList.toggle('hidden', !editMode);
-      document.getElementById('editProfileBtn').innerText = editMode ? '✅ Guardar' : '✏️ Editar';
+      document.getElementById('editProfileBtn').innerText = editMode ? '✅ Listo' : '✏️ Editar';
     }
 
     function createNewProfile() {
@@ -530,16 +534,31 @@
 
     function toggleCodeBadges() {
       showBadges = !showBadges;
-      document.querySelectorAll('.code-badge').forEach(el => {
-        el.classList.toggle('hidden', !showBadges);
-      });
+      for (let i = 1; i <= 13; i++) {
+        const sub = document.getElementById('sub_' + i);
+        if (!sub) continue;
+        const base = sub.getAttribute('data-base') || '';
+        if (showBadges) {
+          sub.innerText = base ? `${base} • ${i}\\n` : `Código: ${i}\\n`;
+          sub.classList.remove('hidden');
+        } else {
+          sub.innerText = base;
+          if (!base) sub.classList.add('hidden');
+        }
+      }
       document.getElementById('badgeBtn').innerText = showBadges ? 'Ocultar códigos' : 'Mostrar códigos';
     }
 
     function logConsole(type, text) {
       const box = document.getElementById('consoleBox');
       const line = document.createElement('div');
-      const color = type === 'TX' ? 'text-sky-400' : type === 'RX' ? 'text-emerald-400' : type === 'ERR' ? 'text-rose-400' : 'text-[var(--text-muted)]';
+      const color = type === 'TX'
+        ? 'text-[var(--accent-blue)] font-semibold'
+        : (type === 'RX' || type === 'BLE')
+          ? 'text-[var(--accent-green)] font-semibold'
+          : type === 'ERR'
+            ? 'text-[var(--accent-red)] font-semibold'
+            : 'text-[var(--text-muted)] font-medium';
       line.className = color;
       line.innerText = `[${type}] ${text}`;
       box.appendChild(line);
