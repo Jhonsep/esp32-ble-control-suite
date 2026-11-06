@@ -5,6 +5,9 @@ on:
     branches: [ main ]
   workflow_dispatch:
 
+permissions:
+  contents: write
+
 jobs:
   build-android:
     runs-on: ubuntu-latest
@@ -13,11 +16,32 @@ jobs:
         working-directory: flutter_app
     steps:
       - uses: actions/checkout@v4
+      - uses: actions/setup-java@v4
+        with:
+          distribution: 'zulu'
+          java-version: '17'
       - uses: subosito/flutter-action@v2
         with:
           channel: 'stable'
-      - name: Create missing platform files if needed
-        run: flutter create . --project-name esp32_ble_control_suite
+      - name: Create Android platform files
+        run: flutter create --platforms=android --project-name esp32_ble_control_suite .
+      - name: Inject Bluetooth & Location permissions into AndroidManifest.xml
+        run: |
+          python3 -c '
+          p = "android/app/src/main/AndroidManifest.xml"
+          with open(p, "r") as f:
+              c = f.read()
+          perms = """<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+              <uses-permission android:name="android.permission.BLUETOOTH" />
+              <uses-permission android:name="android.permission.BLUETOOTH_ADMIN" />
+              <uses-permission android:name="android.permission.BLUETOOTH_SCAN" android:usesPermissionFlags="neverForLocation" />
+              <uses-permission android:name="android.permission.BLUETOOTH_CONNECT" />
+              <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
+              <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION" />"""
+          c = c.replace("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">", perms, 1)
+          with open(p, "w") as f:
+              f.write(c)
+          '
       - name: Install dependencies
         run: flutter pub get
       - name: Build APK
@@ -27,3 +51,11 @@ jobs:
         with:
           name: esp32-ble-control-apk
           path: flutter_app/build/app/outputs/flutter-apk/app-release.apk
+      - name: Publish APK to GitHub Releases
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: v2.0.0
+          name: "ESP32 BLE Control Suite APK (Latest)"
+          body: "Descarga directa del instalador `.apk` para Android con soporte BLE UART, conexión rápida y plantillas personalizables."
+          files: flutter_app/build/app/outputs/flutter-apk/app-release.apk
+          prerelease: false

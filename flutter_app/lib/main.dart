@@ -1,8 +1,10 @@
 import 'dart:async';
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_blue_plus/flutter_blue_plus.dart';
+import 'package:permission_handler/permission_handler.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 
 void main() {
@@ -141,6 +143,17 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
   void initState() {
     super.initState();
     _loadSavedState();
+    _requestBlePermissions();
+  }
+
+  Future<void> _requestBlePermissions() async {
+    if (Platform.isAndroid) {
+      await [
+        Permission.bluetoothScan,
+        Permission.bluetoothConnect,
+        Permission.locationWhenInUse,
+      ].request();
+    }
   }
 
   Future<void> _loadSavedState() async {
@@ -244,8 +257,10 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
     }
   }
 
-  void _openBleScannerModal() {
-    FlutterBluePlus.startScan(timeout: const Duration(seconds: 5));
+  Future<void> _openBleScannerModal() async {
+    await _requestBlePermissions();
+    await FlutterBluePlus.startScan(timeout: const Duration(seconds: 6));
+    if (!mounted) return;
     showModalBottomSheet(
       context: context,
       builder: (ctx) {
@@ -260,13 +275,16 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                     style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
                 const SizedBox(height: 8),
                 SizedBox(
-                  height: 240,
+                  height: 260,
                   child: StreamBuilder<List<ScanResult>>(
                     stream: FlutterBluePlus.scanResults,
                     builder: (context, snapshot) {
-                      final results = (snapshot.data ?? [])
-                          .where((r) => r.device.platformName.isNotEmpty)
-                          .toList();
+                      final results = (snapshot.data ?? []).where((r) {
+                        final name = r.device.platformName.isNotEmpty
+                            ? r.device.platformName
+                            : r.advertisementData.advName;
+                        return name.isNotEmpty;
+                      }).toList();
                       if (results.isEmpty) {
                         return const Center(child: Text('Buscando ESP32 BLE cercanos...'));
                       }
@@ -274,8 +292,11 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                         itemCount: results.length,
                         itemBuilder: (context, idx) {
                           final r = results[idx];
+                          final devName = r.device.platformName.isNotEmpty
+                              ? r.device.platformName
+                              : r.advertisementData.advName;
                           return ListTile(
-                            title: Text(r.device.platformName,
+                            title: Text(devName,
                                 style: const TextStyle(fontWeight: FontWeight.bold)),
                             subtitle: Text('RSSI: ${r.rssi} dBm • ${r.device.remoteId.str}'),
                             trailing: FilledButton.tonal(
