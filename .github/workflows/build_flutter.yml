@@ -24,8 +24,8 @@ jobs:
         with:
           channel: 'stable'
       - name: Create Android platform files
-        run: flutter create --platforms=android --project-name esp32_ble_control_suite .
-      - name: Inject Bluetooth & Location permissions into AndroidManifest.xml
+        run: flutter create --platforms=android --org com.publiyaw --project-name esp32_ble_control_suite .
+      - name: Inject Bluetooth Classic SPP + BLE Permissions & Native Handler
         run: |
           python3 -c '
           p = "android/app/src/main/AndroidManifest.xml"
@@ -41,6 +41,78 @@ jobs:
           c = c.replace("<manifest xmlns:android=\"http://schemas.android.com/apk/res/android\">", perms, 1)
           with open(p, "w") as f:
               f.write(c)
+
+          kt_path = "android/app/src/main/kotlin/com/publiyaw/esp32_ble_control_suite/MainActivity.kt"
+          kt_code = """package com.publiyaw.esp32_ble_control_suite
+
+          import android.annotation.SuppressLint
+          import android.bluetooth.BluetoothAdapter
+          import android.bluetooth.BluetoothSocket
+          import io.flutter.embedding.android.FlutterActivity
+          import io.flutter.embedding.engine.FlutterEngine
+          import io.flutter.plugin.common.MethodChannel
+          import java.util.UUID
+
+          class MainActivity: FlutterActivity() {
+              private val CHANNEL = "esp32_control/classic_bt"
+              private val SPP_UUID = UUID.fromString("00001101-0000-1000-8000-00805F9B34FB")
+              private var btSocket: BluetoothSocket? = null
+
+              @SuppressLint("MissingPermission")
+              override fun configureFlutterEngine(flutterEngine: FlutterEngine) {
+                  super.configureFlutterEngine(flutterEngine)
+                  MethodChannel(flutterEngine.dartExecutor.binaryMessenger, CHANNEL).setMethodCallHandler { call, result ->
+                      val adapter = BluetoothAdapter.getDefaultAdapter()
+                      when (call.method) {
+                          "getBondedDevices" -> {
+                              if (adapter == null) {
+                                  result.success(emptyList<Map<String, String>>())
+                              } else {
+                                  val list = adapter.bondedDevices.map {
+                                      mapOf("name" to (it.name ?: "ESP32"), "address" to it.address)
+                                  }
+                                  result.success(list)
+                              }
+                          }
+                          "connect" -> {
+                              val address = call.argument<String>("address")
+                              Thread {
+                                  try {
+                                      btSocket?.close()
+                                      val device = adapter.getRemoteDevice(address)
+                                      val socket = device.createRfcommSocketToServiceRecord(SPP_UUID)
+                                      adapter.cancelDiscovery()
+                                      socket.connect()
+                                      btSocket = socket
+                                      runOnUiThread { result.success(true) }
+                                  } catch (e: Exception) {
+                                      runOnUiThread { result.success(false) }
+                                  }
+                              }.start()
+                          }
+                          "write" -> {
+                              val data = call.argument<String>("data") ?: ""
+                              try {
+                                  val out = btSocket?.outputStream
+                                  if (out != null && btSocket?.isConnected == true) {
+                                      out.write(data.toByteArray())
+                                      out.flush()
+                                      result.success(true)
+                                  } else {
+                                      result.success(false)
+                                  }
+                              } catch (e: Exception) {
+                                  result.success(false)
+                              }
+                          }
+                          else -> result.notImplemented()
+                      }
+                  }
+              }
+          }
+          """
+          with open(kt_path, "w") as f:
+              f.write(kt_code)
           '
       - name: Install dependencies
         run: flutter pub get
@@ -54,8 +126,8 @@ jobs:
       - name: Publish APK to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.0.0
-          name: "ESP32 BLE Control Suite APK (Latest)"
-          body: "Descarga directa del instalador `.apk` para Android con soporte BLE UART, conexión rápida y plantillas personalizables."
+          tag_name: v2.1.0
+          name: "ESP32 Control Suite APK (Dual: BT Clásico + BLE)"
+          body: "Instalador `.apk` para Android compatible TANTO con el código viejo del ESP32 (Bluetooth Clásico SPP) como con el código nuevo (BLE UART)."
           files: flutter_app/build/app/outputs/flutter-apk/app-release.apk
           prerelease: false

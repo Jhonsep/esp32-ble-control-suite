@@ -62,9 +62,13 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
   static const String nusServiceUuid = "6e400001-b5a3-f393-e0a9-e50e24dcca9e";
   static const String nusRxUuid = "6e400002-b5a3-f393-e0a9-e50e24dcca9e";
   static const String nusTxUuid = "6e400003-b5a3-f393-e0a9-e50e24dcca9e";
+  static const MethodChannel _classicBtChannel =
+      MethodChannel('esp32_control/classic_bt');
 
   BluetoothDevice? _connectedDevice;
   BluetoothCharacteristic? _rxChar;
+  bool _connectedClassic = false;
+  String? _lastClassicAddress;
   StreamSubscription<List<int>>? _txSub;
   StreamSubscription<BluetoothConnectionState>? _connSub;
   String? _lastDeviceId;
@@ -167,12 +171,37 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
     }
     setState(() {
       _lastDeviceId = prefs.getString('last_ble_id');
+      _lastClassicAddress = prefs.getString('last_classic_addr');
       _lastDeviceName = prefs.getString('last_ble_name') ?? "Sin conectar";
       final savedProf = prefs.getString('last_profile');
       if (savedProf != null && _profiles.containsKey(savedProf)) {
         _currentProfileKey = savedProf;
       }
     });
+  }
+
+  Future<void> _connectClassicBt(String name, String address) async {
+    try {
+      _log('BT', 'Conectando por Bluetooth Clásico (SPP) a $name ($address)...');
+      final ok = await _classicBtChannel
+          .invokeMethod<bool>('connect', {'address': address});
+      if (ok == true) {
+        final prefs = await SharedPreferences.getInstance();
+        await prefs.setString('last_classic_addr', address);
+        await prefs.setString('last_ble_name', name);
+        setState(() {
+          _connectedClassic = true;
+          _connectedDevice = null;
+          _lastClassicAddress = address;
+          _lastDeviceName = name;
+        });
+        _log('BT', 'Conectado por BT Clásico (código viejo compatible) a $name');
+      } else {
+        _log('ERR', 'No se pudo abrir socket SPP con $name');
+      }
+    } catch (e) {
+      _log('ERR', 'Error BT Clásico: $e');
+    }
   }
 
   Future<void> _saveProfiles() async {
@@ -245,8 +274,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
   }
 
   Future<void> _quickReconnect() async {
-    if (_connectedDevice != null) {
-      _log('BLE', 'Ya estás conectado a $_lastDeviceName');
+    if (_connectedDevice != null || _connectedClassic) {
+      _log('BT', 'Ya estás conectado a $_lastDeviceName');
+      return;
+    }
+    if (_lastClassicAddress != null && Platform.isAndroid) {
+      await _connectClassicBt(_lastDeviceName, _lastClassicAddress!);
       return;
     }
     if (_lastDeviceId != null) {
@@ -259,10 +292,23 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
 
   Future<void> _openBleScannerModal() async {
     await _requestBlePermissions();
+    List<Map<String, String>> bondedClassic = [];
+    if (Platform.isAndroid) {
+      try {
+        final raw = await _classicBtChannel.invokeMethod<List>('getBondedDevices');
+        if (raw != null) {
+          bondedClassic = raw
+              .map((e) => Map<String, String>.from(e as Map))
+              .toList();
+        }
+      } catch (_) {}
+    }
+
     await FlutterBluePlus.startScan(timeout: const Duration(seconds: 6));
     if (!mounted) return;
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       builder: (ctx) {
         return SafeArea(
           child: Padding(
@@ -271,11 +317,41 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text('📡 Dispositivos BLE Cercanos',
-                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 16)),
-                const SizedBox(height: 8),
+                if (bondedClassic.isNotEmpty) ...[
+                  const Text('🔗 Bluetooth Clásico Vinculados (Código Viejo ESP32)',
+                      style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                  const SizedBox(height: 4),
+                  SizedBox(
+                    height: 150,
+                    child: ListView.builder(
+                      itemCount: bondedClassic.length,
+                      itemBuilder: (context, idx) {
+                        final b = bondedClassic[idx];
+                        return ListTile(
+                          dense: true,
+                          title: Text(b['name'] ?? 'ESP32',
+                              style: const TextStyle(fontWeight: FontWeight.bold)),
+                          subtitle: Text('MAC: ${b['address']} • BT Clásico SPP'),
+                          trailing: FilledButton(
+                            onPressed: () {
+                              FlutterBluePlus.stopScan();
+                              Navigator.pop(ctx);
+                              _connectClassicBt(
+                                  b['name'] ?? 'ESP32', b['address'] ?? '');
+                            },
+                            child: const Text('Conectar'),
+                          ),
+                        );
+                      },
+                    ),
+                  ),
+                  const Divider(),
+                ],
+                const Text('📡 Dispositivos BLE Cercanos (Código Nuevo ESP32)',
+                    style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
+                const SizedBox(height: 4),
                 SizedBox(
-                  height: 260,
+                  height: 180,
                   child: StreamBuilder<List<ScanResult>>(
                     stream: FlutterBluePlus.scanResults,
                     builder: (context, snapshot) {
@@ -296,6 +372,7 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                               ? r.device.platformName
                               : r.advertisementData.advName;
                           return ListTile(
+                            dense: true,
                             title: Text(devName,
                                 style: const TextStyle(fontWeight: FontWeight.bold)),
                             subtitle: Text('RSSI: ${r.rssi} dBm • ${r.device.remoteId.str}'),
@@ -353,13 +430,28 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
 
     HapticFeedback.lightImpact();
     final payload = '$code\n';
+    if (_connectedClassic) {
+      try {
+        final ok = await _classicBtChannel
+            .invokeMethod<bool>('write', {'data': payload});
+        if (ok == true) {
+          _log('TX', '[BT Clásico] Enviado -> "$code\\n"');
+        } else {
+          setState(() => _connectedClassic = false);
+          _log('ERR', 'Conexión BT Clásico perdida');
+        }
+      } catch (e) {
+        _log('ERR', 'Error al enviar por BT Clásico: $e');
+      }
+      return;
+    }
     if (_connectedDevice == null || _rxChar == null) {
       _log('ERR', 'No conectado (Comando "$code\\n" no enviado)');
       return;
     }
     try {
       await _rxChar!.write(utf8.encode(payload), withoutResponse: false);
-      _log('TX', 'Enviado -> "$code\\n"');
+      _log('TX', '[BLE] Enviado -> "$code\\n"');
     } catch (e) {
       _log('ERR', 'Error al enviar: $e');
     }
@@ -409,7 +501,7 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
   @override
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
-    final connected = _connectedDevice != null;
+    final connected = _connectedDevice != null || _connectedClassic;
 
     return Scaffold(
       body: SafeArea(
