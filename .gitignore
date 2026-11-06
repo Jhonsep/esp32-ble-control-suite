@@ -1,0 +1,12 @@
+# Archivos comprimidos pesados o temporales
+*.rar
+*.zip
+.DS_Store
+Thumbs.db
+
+# Flutter build artifacts
+flutter_app/.dart_tool/
+flutter_app/build/
+flutter_app/.flutter-plugins
+flutter_app/.flutter-plugins-dependencies
+flutter_app/.packages

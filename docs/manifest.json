@@ -1,0 +1,9 @@
+{
+  "name": "ESP32 BLE Control Suite",
+  "short_name": "ESP32 Control",
+  "start_url": "./index.html",
+  "display": "standalone",
+  "background_color": "#090d16",
+  "theme_color": "#111827",
+  "description": "Controlador y debugger universal BLE para proyectos con ESP32"
+}
