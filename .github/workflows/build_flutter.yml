@@ -126,8 +126,8 @@ jobs:
       - name: Publish APK to GitHub Releases
         uses: softprops/action-gh-release@v2
         with:
-          tag_name: v2.1.0
-          name: "ESP32 Control Suite APK (Dual: BT Clásico + BLE)"
-          body: "Instalador `.apk` para Android compatible TANTO con el código viejo del ESP32 (Bluetooth Clásico SPP) como con el código nuevo (BLE UART)."
+          tag_name: v2.2.0
+          name: "ESP32 Control Suite APK v2.2 (Responsive + Dual BT Clásico & BLE)"
+          body: "Instalador `.apk` para Android con diseño 100% responsive (sin desbordes de texto), iconos vectoriales limpios y soporte tanto para el código viejo (Bluetooth Clásico) como para el código nuevo (BLE)."
           files: flutter_app/build/app/outputs/flutter-apk/app-release.apk
           prerelease: false
