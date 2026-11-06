@@ -1,5 +1,11 @@
 # 📡 ESP32 BLE Control & Debug Suite
 
+![License: MIT](https://img.shields.io/badge/License-MIT-emerald.svg)
+![Platform: iOS | Android | Web](https://img.shields.io/badge/Platform-iOS%20%7C%20Android%20%7C%20Web-sky.svg)
+![Protocol: BLE NUS UART](https://img.shields.io/badge/Protocol-BLE%20NUS%20UART-indigo.svg)
+
+> **Descripción del Repositorio:** Suite multiplataforma (iOS, Android y Web PWA) para control remoto, telemetría y debugging de proyectos con ESP32 por Bluetooth Low Energy (BLE UART), con plantillas personalizables, parada de emergencia y monitor serial en vivo.
+
 Suite multiplataforma (**iOS, Android y Web**) para control y debugging de proyectos con **ESP32** mediante **Bluetooth Low Energy (BLE UART / NUS)**, reemplazando y modernizando la antigua aplicación de MIT App Inventor manteniendo retrocompatibilidad total con el protocolo de strings (`"1\n"` al `"13\n"`).
 
 ---
