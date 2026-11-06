@@ -542,13 +542,28 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
   Widget build(BuildContext context) {
     final isDark = Theme.of(context).brightness == Brightness.dark;
     final connected = _connectedDevice != null || _connectedClassic;
+
+    // Paleta de alto contraste tanto en Modo Oscuro como en Modo Claro
     final cardColor = isDark ? const Color(0xFF111827) : Colors.white;
     final surfaceColor =
-        isDark ? const Color(0xFF1E293B) : const Color(0xFFF8FAFC);
+        isDark ? const Color(0xFF1E293B) : const Color(0xFFE2E8F0);
+    final btnSurfaceColor =
+        isDark ? const Color(0xFF1E293B) : const Color(0xFFF1F5F9);
     final borderColor =
-        isDark ? const Color(0xFF334155) : const Color(0xFFCBD5E1);
+        isDark ? const Color(0xFF334155) : const Color(0xFF94A3B8);
+    final textMainColor =
+        isDark ? const Color(0xFFF8FAFC) : const Color(0xFF0F172A);
     final mutedColor =
-        isDark ? const Color(0xFF94A3B8) : const Color(0xFF64748B);
+        isDark ? const Color(0xFF94A3B8) : const Color(0xFF334155);
+
+    final accentBlue =
+        isDark ? const Color(0xFF38BDF8) : const Color(0xFF0369A1);
+    final accentGreen =
+        isDark ? const Color(0xFF34D399) : const Color(0xFF047857);
+    final accentRed =
+        isDark ? const Color(0xFFFB7185) : const Color(0xFFBE123C);
+    final accentAmber =
+        isDark ? const Color(0xFFFBBF24) : const Color(0xFFB45309);
 
     return Scaffold(
       body: SafeArea(
@@ -634,9 +649,9 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                                 decoration: BoxDecoration(
                                                   color: connected
                                                       ? const Color(0xFF10B981)
-                                                          .withOpacity(0.18)
+                                                          .withOpacity(isDark ? 0.18 : 0.22)
                                                       : const Color(0xFFF43F5E)
-                                                          .withOpacity(0.18),
+                                                          .withOpacity(isDark ? 0.18 : 0.22),
                                                   borderRadius:
                                                       BorderRadius.circular(8),
                                                 ),
@@ -650,10 +665,8 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                                     fontSize: 10,
                                                     fontWeight: FontWeight.bold,
                                                     color: connected
-                                                        ? const Color(
-                                                            0xFF34D399)
-                                                        : const Color(
-                                                            0xFFFB7185),
+                                                        ? accentGreen
+                                                        : accentRed,
                                                   ),
                                                 ),
                                               ),
@@ -682,12 +695,11 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                             _buildTopPillButton(
                               onTap: _quickReconnect,
                               icon: Icons.bolt_rounded,
-                              iconColor: const Color(0xFF34D399),
+                              iconColor: accentGreen,
                               label: 'Rápida',
-                              bgColor:
-                                  const Color(0xFF10B981).withOpacity(0.12),
-                              borderColor:
-                                  const Color(0xFF10B981).withOpacity(0.4),
+                              bgColor: const Color(0xFF10B981)
+                                  .withOpacity(isDark ? 0.12 : 0.18),
+                              borderColor: accentGreen.withOpacity(0.55),
                             ),
                             const SizedBox(width: 6),
 
@@ -695,7 +707,7 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                             _buildTopPillButton(
                               onTap: _openBleScannerModal,
                               icon: Icons.bluetooth_searching_rounded,
-                              iconColor: const Color(0xFF38BDF8),
+                              iconColor: accentBlue,
                               label: 'BLE',
                               bgColor: cardColor,
                               borderColor: borderColor,
@@ -725,9 +737,7 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                       ? Icons.dark_mode_rounded
                                       : Icons.light_mode_rounded,
                                   size: 18,
-                                  color: isDark
-                                      ? const Color(0xFFFBBF24)
-                                      : const Color(0xFFF59E0B),
+                                  color: accentAmber,
                                 ),
                               ),
                             ),
@@ -751,7 +761,7 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                 padding:
                                     const EdgeInsets.symmetric(horizontal: 10),
                                 decoration: BoxDecoration(
-                                  color: surfaceColor,
+                                  color: btnSurfaceColor,
                                   borderRadius: BorderRadius.circular(10),
                                   border: Border.all(color: borderColor),
                                 ),
@@ -769,8 +779,9 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                                 e.value['name'].toString(),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
-                                                style: const TextStyle(
+                                                style: TextStyle(
                                                     fontSize: 12,
+                                                    color: textMainColor,
                                                     fontWeight:
                                                         FontWeight.w600),
                                               ),
@@ -797,25 +808,21 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                               icon: _editMode
                                   ? Icons.check_circle_rounded
                                   : Icons.edit_rounded,
-                              iconColor: _editMode
-                                  ? const Color(0xFF34D399)
-                                  : mutedColor,
+                              iconColor: _editMode ? accentGreen : mutedColor,
                               label: _editMode ? 'Listo' : 'Editar',
-                              bgColor: surfaceColor,
-                              borderColor: _editMode
-                                  ? const Color(0xFF34D399)
-                                  : borderColor,
+                              bgColor: btnSurfaceColor,
+                              borderColor:
+                                  _editMode ? accentGreen : borderColor,
                             ),
                             const SizedBox(width: 6),
                             _buildTopPillButton(
                               onTap: _createNewTemplate,
                               icon: Icons.add_rounded,
-                              iconColor: const Color(0xFF38BDF8),
+                              iconColor: accentBlue,
                               label: 'Plantilla',
-                              bgColor:
-                                  const Color(0xFF0EA5E9).withOpacity(0.12),
-                              borderColor:
-                                  const Color(0xFF0EA5E9).withOpacity(0.4),
+                              bgColor: const Color(0xFF0EA5E9)
+                                  .withOpacity(isDark ? 0.12 : 0.18),
+                              borderColor: accentBlue.withOpacity(0.5),
                             ),
                           ],
                         ),
@@ -826,13 +833,13 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                           width: double.infinity,
                           padding: const EdgeInsets.symmetric(
                               horizontal: 12, vertical: 6),
-                          color: const Color(0xFFF59E0B).withOpacity(0.15),
-                          child: const Text(
+                          color: const Color(0xFFF59E0B).withOpacity(0.18),
+                          child: Text(
                             '✏️ Modo Edición: Toca cualquier botón para cambiarle el nombre.',
                             style: TextStyle(
                                 fontSize: 11,
-                                color: Color(0xFFFBBF24),
-                                fontWeight: FontWeight.w600),
+                                color: accentAmber,
+                                fontWeight: FontWeight.w700),
                           ),
                         ),
 
@@ -862,10 +869,10 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                       _showBadges
                                           ? 'Ocultar códigos'
                                           : 'Mostrar códigos',
-                                      style: const TextStyle(
+                                      style: TextStyle(
                                         fontSize: 11,
-                                        color: Color(0xFF38BDF8),
-                                        fontWeight: FontWeight.w600,
+                                        color: accentBlue,
+                                        fontWeight: FontWeight.bold,
                                       ),
                                     ),
                                   ),
@@ -886,9 +893,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                               code,
                                               sub: 'Option ${code - 9}',
                                               height: optBtnHeight,
-                                              surfaceColor: surfaceColor,
+                                              isDark: isDark,
+                                              surfaceColor: btnSurfaceColor,
                                               borderColor: borderColor,
+                                              textMainColor: textMainColor,
                                               mutedColor: mutedColor,
+                                              accentBlue: accentBlue,
                                             ),
                                           ),
                                         ))
@@ -905,9 +915,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                       iconData: Icons.add_circle_outline_rounded,
                                       sub: 'Plus (5)',
                                       height: auxBtnHeight,
-                                      surfaceColor: surfaceColor,
+                                      isDark: isDark,
+                                      surfaceColor: btnSurfaceColor,
                                       borderColor: borderColor,
+                                      textMainColor: textMainColor,
                                       mutedColor: mutedColor,
+                                      accentBlue: accentBlue,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -918,9 +931,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                           Icons.keyboard_arrow_up_rounded,
                                       primary: true,
                                       height: padBtnHeight,
-                                      surfaceColor: surfaceColor,
+                                      isDark: isDark,
+                                      surfaceColor: btnSurfaceColor,
                                       borderColor: borderColor,
+                                      textMainColor: textMainColor,
                                       mutedColor: mutedColor,
+                                      accentBlue: accentBlue,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -931,9 +947,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                           Icons.remove_circle_outline_rounded,
                                       sub: 'Minus (6)',
                                       height: auxBtnHeight,
-                                      surfaceColor: surfaceColor,
+                                      isDark: isDark,
+                                      surfaceColor: btnSurfaceColor,
                                       borderColor: borderColor,
+                                      textMainColor: textMainColor,
                                       mutedColor: mutedColor,
+                                      accentBlue: accentBlue,
                                     ),
                                   ),
                                 ],
@@ -950,9 +969,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                           Icons.keyboard_arrow_left_rounded,
                                       primary: true,
                                       height: padBtnHeight,
-                                      surfaceColor: surfaceColor,
+                                      isDark: isDark,
+                                      surfaceColor: btnSurfaceColor,
                                       borderColor: borderColor,
+                                      textMainColor: textMainColor,
                                       mutedColor: mutedColor,
+                                      accentBlue: accentBlue,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -963,9 +985,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                       sub: 'Emergencia',
                                       danger: true,
                                       height: padBtnHeight,
-                                      surfaceColor: surfaceColor,
+                                      isDark: isDark,
+                                      surfaceColor: btnSurfaceColor,
                                       borderColor: borderColor,
+                                      textMainColor: textMainColor,
                                       mutedColor: mutedColor,
+                                      accentBlue: accentBlue,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -976,9 +1001,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                           Icons.keyboard_arrow_right_rounded,
                                       primary: true,
                                       height: padBtnHeight,
-                                      surfaceColor: surfaceColor,
+                                      isDark: isDark,
+                                      surfaceColor: btnSurfaceColor,
                                       borderColor: borderColor,
+                                      textMainColor: textMainColor,
                                       mutedColor: mutedColor,
+                                      accentBlue: accentBlue,
                                     ),
                                   ),
                                 ],
@@ -994,9 +1022,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                       iconData: Icons.bookmark_border_rounded,
                                       sub: 'Save (8)',
                                       height: auxBtnHeight,
-                                      surfaceColor: surfaceColor,
+                                      isDark: isDark,
+                                      surfaceColor: btnSurfaceColor,
                                       borderColor: borderColor,
+                                      textMainColor: textMainColor,
                                       mutedColor: mutedColor,
+                                      accentBlue: accentBlue,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -1007,9 +1038,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                           Icons.keyboard_arrow_down_rounded,
                                       primary: true,
                                       height: padBtnHeight,
-                                      surfaceColor: surfaceColor,
+                                      isDark: isDark,
+                                      surfaceColor: btnSurfaceColor,
                                       borderColor: borderColor,
+                                      textMainColor: textMainColor,
                                       mutedColor: mutedColor,
+                                      accentBlue: accentBlue,
                                     ),
                                   ),
                                   const SizedBox(width: 8),
@@ -1019,9 +1053,12 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                       iconData: Icons.play_arrow_rounded,
                                       sub: 'Play (9)',
                                       height: auxBtnHeight,
-                                      surfaceColor: surfaceColor,
+                                      isDark: isDark,
+                                      surfaceColor: btnSurfaceColor,
                                       borderColor: borderColor,
+                                      textMainColor: textMainColor,
                                       mutedColor: mutedColor,
+                                      accentBlue: accentBlue,
                                     ),
                                   ),
                                 ],
@@ -1055,7 +1092,7 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                                   style: TextStyle(
                                                     fontSize: 11,
                                                     fontWeight: FontWeight.bold,
-                                                    color: mutedColor,
+                                                    color: textMainColor,
                                                   ),
                                                 ),
                                               ],
@@ -1067,7 +1104,8 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                                 'Limpiar',
                                                 style: TextStyle(
                                                     fontSize: 11,
-                                                    color: mutedColor),
+                                                    fontWeight: FontWeight.w600,
+                                                    color: accentBlue),
                                               ),
                                             ),
                                           ],
@@ -1077,7 +1115,9 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                       Expanded(
                                         child: Container(
                                           width: double.infinity,
-                                          color: Colors.black.withOpacity(0.18),
+                                          color: isDark
+                                              ? const Color(0xFF090D16)
+                                              : const Color(0xFFF8FAFC),
                                           child: ListView.builder(
                                             controller: _scrollCtrl,
                                             padding: const EdgeInsets.all(8),
@@ -1086,14 +1126,14 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                               final line = _consoleLogs[i];
                                               Color col = mutedColor;
                                               if (line.startsWith('[TX]')) {
-                                                col = const Color(0xFF38BDF8);
+                                                col = accentBlue;
                                               } else if (line.startsWith('[RX]') ||
                                                   line.startsWith('[BT]') ||
                                                   line.startsWith('[BLE]')) {
-                                                col = const Color(0xFF34D399);
+                                                col = accentGreen;
                                               } else if (line
                                                   .startsWith('[ERR]')) {
-                                                col = const Color(0xFFFB7185);
+                                                col = accentRed;
                                               }
                                               return Padding(
                                                 padding: const EdgeInsets.only(
@@ -1103,6 +1143,9 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                                   style: TextStyle(
                                                     fontFamily: 'monospace',
                                                     fontSize: 11,
+                                                    fontWeight: isDark
+                                                        ? FontWeight.normal
+                                                        : FontWeight.w600,
                                                     color: col,
                                                   ),
                                                 ),
@@ -1129,8 +1172,9 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                                 height: 36,
                                                 child: TextField(
                                                   controller: _customCmdCtrl,
-                                                  style: const TextStyle(
+                                                  style: TextStyle(
                                                       fontSize: 12,
+                                                      color: textMainColor,
                                                       fontFamily: 'monospace'),
                                                   decoration: InputDecoration(
                                                     hintText:
@@ -1139,7 +1183,7 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                                         fontSize: 12,
                                                         color: mutedColor),
                                                     filled: true,
-                                                    fillColor: surfaceColor,
+                                                    fillColor: btnSurfaceColor,
                                                     contentPadding:
                                                         const EdgeInsets
                                                             .symmetric(
@@ -1178,7 +1222,7 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
                                               child: FilledButton(
                                                 style: FilledButton.styleFrom(
                                                   backgroundColor:
-                                                      const Color(0xFF0EA5E9),
+                                                      const Color(0xFF0284C7),
                                                   foregroundColor: Colors.white,
                                                   padding: const EdgeInsets
                                                       .symmetric(horizontal: 14),
@@ -1251,7 +1295,7 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
             const SizedBox(width: 4),
             Text(
               label,
-              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600),
+              style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w700),
             ),
           ],
         ),
@@ -1266,21 +1310,33 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
     bool primary = false,
     bool danger = false,
     required double height,
+    required bool isDark,
     required Color surfaceColor,
     required Color borderColor,
+    required Color textMainColor,
     required Color mutedColor,
+    required Color accentBlue,
   }) {
     final bgColor = danger
         ? const Color(0xFFE11D48)
         : primary
-            ? const Color(0xFF0EA5E9).withOpacity(0.15)
+            ? (isDark
+                ? const Color(0xFF0EA5E9).withOpacity(0.16)
+                : const Color(0xFFE0F2FE))
             : surfaceColor;
 
     final bCol = danger
         ? const Color(0xFFF43F5E)
         : primary
-            ? const Color(0xFF0EA5E9).withOpacity(0.45)
+            ? (isDark
+                ? const Color(0xFF38BDF8).withOpacity(0.5)
+                : const Color(0xFF0284C7))
             : borderColor;
+
+    // En vez de superponer un recuadro gris sobre el título, mostramos el código limpio en el subtítulo o badge de alto contraste
+    final subText = _showBadges
+        ? (sub != null ? '$sub • $code\\n' : 'Código: $code\\n')
+        : sub;
 
     return SizedBox(
       height: height,
@@ -1294,69 +1350,54 @@ class _ControlHomeScreenState extends State<ControlHomeScreen> {
             padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 4),
             decoration: BoxDecoration(
               borderRadius: BorderRadius.circular(15),
-              border: Border.all(color: bCol),
+              border: Border.all(color: bCol, width: isDark ? 1.0 : 1.2),
             ),
-            child: Stack(
-              alignment: Alignment.center,
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              mainAxisSize: MainAxisSize.min,
               children: [
-                Column(
-                  mainAxisAlignment: MainAxisAlignment.center,
-                  mainAxisSize: MainAxisSize.min,
-                  children: [
-                    if (iconData != null)
-                      Icon(
-                        iconData,
-                        size: primary ? 22 : 16,
-                        color: danger
-                            ? Colors.white
-                            : primary
-                                ? const Color(0xFF38BDF8)
-                                : mutedColor,
-                      ),
-                    Flexible(
-                      child: FittedBox(
-                        fit: BoxFit.scaleDown,
-                        child: Text(
-                          _label(code),
-                          maxLines: 1,
-                          textAlign: TextAlign.center,
-                          style: TextStyle(
-                            fontWeight: FontWeight.bold,
-                            fontSize: 12,
-                            color: danger ? Colors.white : null,
-                          ),
-                        ),
+                if (iconData != null)
+                  Icon(
+                    iconData,
+                    size: primary ? 22 : 16,
+                    color: danger
+                        ? Colors.white
+                        : primary
+                            ? accentBlue
+                            : textMainColor,
+                  ),
+                Flexible(
+                  child: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Text(
+                      _label(code),
+                      maxLines: 1,
+                      textAlign: TextAlign.center,
+                      style: TextStyle(
+                        fontWeight: FontWeight.w800,
+                        fontSize: 12,
+                        color: danger ? Colors.white : textMainColor,
                       ),
                     ),
-                    if (sub != null && !primary)
-                      Text(
-                        sub,
+                  ),
+                ),
+                if (subText != null && (!primary || _showBadges))
+                  Flexible(
+                    child: FittedBox(
+                      fit: BoxFit.scaleDown,
+                      child: Text(
+                        subText,
                         maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
                         style: TextStyle(
                           fontSize: 10,
-                          color: danger ? Colors.white70 : mutedColor,
-                        ),
-                      ),
-                  ],
-                ),
-                if (_showBadges)
-                  Positioned(
-                    top: 1,
-                    right: 3,
-                    child: Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 3, vertical: 0.5),
-                      decoration: BoxDecoration(
-                        color: Colors.black.withOpacity(0.35),
-                        borderRadius: BorderRadius.circular(4),
-                      ),
-                      child: Text(
-                        '$code\\n',
-                        style: const TextStyle(
-                          fontSize: 9,
-                          fontFamily: 'monospace',
-                          color: Color(0xFF38BDF8),
+                          fontWeight: _showBadges
+                              ? FontWeight.w700
+                              : FontWeight.w500,
+                          color: danger
+                              ? Colors.white
+                              : _showBadges
+                                  ? accentBlue
+                                  : mutedColor,
                         ),
                       ),
                     ),
